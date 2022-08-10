@@ -1,0 +1,288 @@
+image: docker:stable
+
+stages:
+  - validate
+  - build-base
+  - build
+
+# Temporary fix for https://gitlab.com/gitlab-org/gitlab-ce/issues/64959
+variables:
+  DOCKER_TLS_CERTDIR: ""
+
+dockerfile_lint:
+  stage: validate
+  image: hadolint/hadolint:latest-debian
+  script:
+    - hadolint generic/Dockerfile
+    - hadolint generic/Dockerfile.legacy.colcon
+    - hadolint generic/Dockerfile.legacy.catkin
+    - hadolint generic/Dockerfile.base
+    - hadolint generic/Dockerfile.cuda.kinetic
+    - hadolint generic/Dockerfile.cuda.melodic
+    - hadolint crossbuild/Dockerfile.kinetic-crossbuild
+    - hadolint crossbuild/Dockerfile.kinetic-crossbuild-driveworks
+    - hadolint crossbuild/Dockerfile.melodic-crossbuild
+    - hadolint crossbuild/Dockerfile.melodic-crossbuild-driveworks
+  except:
+    - schedules
+    - web
+
+.common_lines:
+  - &DOCKER_LOGIN docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PASS
+  - &BUILD_BASE ./build.sh -b -c off -i $IMAGE_NAME -r $ROS_DISTRO -t $TAG_PREFIX -v $VERSION
+  - &BUILD_BASE_CUDA ./build.sh -b -i $IMAGE_NAME -r $ROS_DISTRO -t $TAG_PREFIX -v $VERSION
+  - &BUILD_AW_INC ./build.sh -c off -i $IMAGE_NAME -r $ROS_DISTRO -t $TAG_PREFIX -v $VERSION
+  - &BUILD_AW_INC_CUDA ./build.sh -i $IMAGE_NAME -r $ROS_DISTRO -t $TAG_PREFIX -v $VERSION
+  - &BUILD_CROSS ./build_cross_image.sh -p $TARGET_PLATFORM -r $ROS_DISTRO -t $TAG_SUFFIX
+
+.base_script: &base_script
+  services:
+    - docker:dind
+  before_script:
+    - *DOCKER_LOGIN
+    - sed -i 's/\/bin\/bash/\/bin\/sh/g' generic/build.sh
+    - cd generic
+
+.base_script_no_login: &base_script_no_login
+  services:
+    - docker:dind
+  before_script:
+    - sed -i 's/\/bin\/bash/\/bin\/sh/g' generic/build.sh
+    - cd generic
+
+.cross_script: &cross_script
+  services:
+    - docker:dind
+  before_script:
+    - *DOCKER_LOGIN
+    - sed -i 's/\/bin\/bash/\/bin\/sh/g' crossbuild/build_cross_image.sh
+    - cd crossbuild
+
+.cross_script_no_login: &cross_script_no_login
+  services:
+    - docker:dind
+  before_script:
+    - sed -i 's/\/bin\/bash/\/bin\/sh/g' crossbuild/build_cross_image.sh
+    - cd crossbuild
+
+.cross_vars: &cross_vars
+  IMAGE_NAME: autoware/build
+  DOCKER_ARCH: arm64v8
+  TARGET_ARCH: aarch64
+  TARGET_PLATFORM: generic-aarch64
+
+mr_melodic:
+  stage: build
+  variables:
+    IMAGE_NAME: autoware/autoware
+    ROS_DISTRO: melodic
+    TAG_PREFIX: mrtest
+    VERSION: master
+  << : *base_script_no_login
+  script:
+    - *BUILD_AW_INC
+  only:
+    - merge_requests
+
+mr_melodic_cuda:
+  stage: build
+  variables:
+    IMAGE_NAME: autoware/autoware
+    ROS_DISTRO: melodic
+    TAG_PREFIX: mrtest
+    VERSION: master
+  << : *base_script_no_login
+  script:
+    - *BUILD_AW_INC_CUDA
+  only:
+    - merge_requests
+
+mr_melodic_aarch64_cross:
+  stage: build
+  variables:
+    << : *cross_vars
+    ROS_DISTRO: melodic
+    TAG_SUFFIX: mrtest
+  << : *cross_script_no_login
+  script:
+    - *BUILD_CROSS
+  only:
+    - merge_requests
+
+nightly_melodic:
+  stage: build-base
+  variables:
+    IMAGE_NAME: autoware/autoware
+    ROS_DISTRO: melodic
+    TAG_PREFIX: bleedingedge
+    VERSION: master
+  << : *base_script
+  script:
+    - *BUILD_BASE
+    - *BUILD_BASE_CUDA
+    # Push images
+    - docker push $IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-base
+    - docker push $IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-base-cuda
+  only:
+    - schedules
+    - web
+
+nightly_melodic_aarch64_native:
+  tags:
+    - arm64
+  stage: build-base
+  variables:
+    IMAGE_NAME: autoware/arm64v8
+    ROS_DISTRO: melodic
+    TAG_PREFIX: bleedingedge
+    VERSION: master
+  <<: *base_script
+  script:
+    - *BUILD_BASE
+    # Push image
+    - docker push $IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-base
+  only:
+    - schedules
+    - web
+
+nightly_melodic_aarch64_cross:
+  stage: build-base
+  variables:
+    << : *cross_vars
+    ROS_DISTRO: melodic
+    TAG_SUFFIX: bleedingedge
+  << : *cross_script
+  script:
+    - *BUILD_CROSS
+    # Push image
+    - docker push $IMAGE_NAME:$TARGET_PLATFORM-$ROS_DISTRO-$TAG_SUFFIX
+  only:
+    - schedules
+    - web
+
+release_melodic_base:
+  stage: build-base
+  variables:
+    IMAGE_NAME: autoware/autoware
+    ROS_DISTRO: melodic
+    TAG_PREFIX: $CI_COMMIT_TAG
+    VERSION: $CI_COMMIT_TAG
+  << : *base_script
+  script:
+    - *BUILD_BASE
+    - *BUILD_BASE_CUDA
+    # Tag with latest
+    - docker tag $IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-base $IMAGE_NAME:latest-$ROS_DISTRO-base
+    - docker tag $IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-base-cuda $IMAGE_NAME:latest-$ROS_DISTRO-base-cuda
+    # Push images
+    - docker push $IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-base
+    - docker push $IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-base-cuda
+    - docker push $IMAGE_NAME:latest-$ROS_DISTRO-base
+    - docker push $IMAGE_NAME:latest-$ROS_DISTRO-base-cuda
+  only:
+    - tags
+    - /^[0-9]+\.[0-9]+\.[0-9]+.*$/
+
+release_melodic_base_aarch64_native:
+  tags:
+    - arm64
+  stage: build-base
+  variables:
+    IMAGE_NAME: autoware/arm64v8
+    ROS_DISTRO: melodic
+    TAG_PREFIX: $CI_COMMIT_TAG
+    VERSION: $CI_COMMIT_TAG
+  << : *base_script
+  script:
+    - *BUILD_BASE
+    # Tag with latest
+    - docker tag $IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-base $IMAGE_NAME:latest-$ROS_DISTRO-base
+    # Push images
+    - docker push $IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-base
+    - docker push $IMAGE_NAME:latest-$ROS_DISTRO-base
+  only:
+    - tags
+    - /^[0-9]+\.[0-9]+\.[0-9]+.*$/
+
+release_melodic:
+  stage: build
+  dependencies:
+    - release_melodic_base
+  variables:
+    IMAGE_NAME: autoware/autoware
+    ROS_DISTRO: melodic
+    TAG_PREFIX: $CI_COMMIT_TAG
+    VERSION: $CI_COMMIT_TAG
+  << : *base_script
+  script:
+    - *BUILD_AW_INC
+    # Tag with latest
+    - docker tag $IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO $IMAGE_NAME:latest-$ROS_DISTRO
+    # Push images
+    - docker push $IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO
+    - docker push $IMAGE_NAME:latest-$ROS_DISTRO
+  only:
+    - tags
+    - /^[0-9]+\.[0-9]+\.[0-9]+.*$/
+
+release_melodic_cuda:
+  stage: build
+  dependencies:
+    - release_melodic_base
+  variables:
+    IMAGE_NAME: autoware/autoware
+    ROS_DISTRO: melodic
+    TAG_PREFIX: $CI_COMMIT_TAG
+    VERSION: $CI_COMMIT_TAG
+  << : *base_script
+  script:
+    - *BUILD_AW_INC_CUDA
+    # Tag with latest
+    - docker tag $IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-cuda $IMAGE_NAME:latest-$ROS_DISTRO-cuda
+    # Push images
+    - docker push $IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-cuda
+    - docker push $IMAGE_NAME:latest-$ROS_DISTRO-cuda
+  only:
+    - tags
+    - /^[0-9]+\.[0-9]+\.[0-9]+.*$/
+
+release_melodic_aarch64_native:
+  tags:
+    - arm64
+  stage: build
+  dependencies:
+    - release_melodic_base_aarch64_native
+  variables:
+    IMAGE_NAME: autoware/arm64v8
+    ROS_DISTRO: melodic
+    TAG_PREFIX: $CI_COMMIT_TAG
+    VERSION: $CI_COMMIT_TAG
+  << : *base_script
+  script:
+    - *BUILD_AW_INC
+    # Tag with latest
+    - docker tag $IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO $IMAGE_NAME:latest-$ROS_DISTRO
+    # Push images
+    - docker push $IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO
+    - docker push $IMAGE_NAME:latest-$ROS_DISTRO
+  only:
+    - tags
+    - /^[0-9]+\.[0-9]+\.[0-9]+.*$/
+
+release_melodic_aarch64_cross:
+  stage: build-base
+  variables:
+    << : *cross_vars
+    ROS_DISTRO: melodic
+    TAG_SUFFIX: $CI_COMMIT_TAG
+  << : *cross_script
+  script:
+    - *BUILD_CROSS
+    # Tag with latest
+    - docker tag $IMAGE_NAME:$TARGET_PLATFORM-$ROS_DISTRO-$TAG_SUFFIX $IMAGE_NAME:$TARGET_PLATFORM-$ROS_DISTRO-latest
+    # Push image
+    - docker push $IMAGE_NAME:$TARGET_PLATFORM-$ROS_DISTRO-$TAG_SUFFIX
+    - docker push $IMAGE_NAME:$TARGET_PLATFORM-$ROS_DISTRO-latest
+  only:
+    - tags
+    - /^[0-9]+\.[0-9]+\.[0-9]+.*$/
