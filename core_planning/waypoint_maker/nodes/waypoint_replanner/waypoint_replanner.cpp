@@ -31,6 +31,7 @@ void WaypointReplanner::updateConfig(const WaypointReplannerConfig& config)
   config_ = config;
 }
 
+//初始化参数
 void WaypointReplanner::initParameter(const autoware_config_msgs::ConfigWaypointReplanner::ConstPtr& conf)
 {
   WaypointReplannerConfig temp_config;

@@ -46,6 +46,8 @@ WaypointReplannerNode::WaypointReplannerNode() : pnh_("~"), is_first_publish_(tr
 
   double velocity_max_kph, velocity_min_kph;
 
+  //launch 文件中 如果进行了参数设置则读取，launch文件中的参数值，否则执行如图所示的默认参数值   
+  // by xz 20220811
   pnh_.param<bool>("replanning_mode", replanning_mode_, false);
   pnh_.param<bool>("realtime_tuning_mode", realtime_tuning_mode_, true);
   pnh_.param<double>("velocity_max", velocity_max_kph, 0.0);
@@ -59,6 +61,7 @@ WaypointReplannerNode::WaypointReplannerNode() : pnh_("~"), is_first_publish_(tr
   pnh_.param<bool>("replan_curve_mode", temp_config.replan_curve_mode, false);
   pnh_.param<bool>("replan_endpoint_mode", temp_config.replan_endpoint_mode, false);
   pnh_.param<bool>("use_decision_maker", use_decision_maker_, false);
+  
 
   temp_config.velocity_max = kmph2mps(velocity_max_kph);
   temp_config.velocity_min = kmph2mps(velocity_min_kph);
@@ -86,7 +89,7 @@ void WaypointReplannerNode::replan(autoware_msgs::LaneArray& lane_array)
   }
 }
 
-void WaypointReplannerNode::publishLaneArray()
+void WaypointReplannerNode::publishLaneArray() //没有明白此函数的作用是啥？
 {
   autoware_msgs::LaneArray array(lane_array_);
 
