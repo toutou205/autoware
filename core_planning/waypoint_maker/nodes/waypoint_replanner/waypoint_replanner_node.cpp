@@ -85,7 +85,7 @@ void WaypointReplannerNode::replan(autoware_msgs::LaneArray& lane_array)
 {
   for (auto &el : lane_array.lanes)
   {
-    replanner_.replanLaneWaypointVel(el);
+    replanner_.replanLaneWaypointVel(el);//对每一条lane，replanner_都调用replanLaneWaypointVel函数。
   }
 }
 
