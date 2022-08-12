@@ -33,7 +33,7 @@ namespace lane_planner {
 
 namespace vmap {
 
-constexpr int LNO_ALL = -1;
+constexpr int LNO_ALL = -1;    //具体含义没有搞懂
 constexpr int LNO_CROSSING = 0;
 constexpr int LNO_MOSTLEFT = 1;
 
