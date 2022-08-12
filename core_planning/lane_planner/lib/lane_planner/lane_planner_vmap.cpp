@@ -234,7 +234,7 @@ vector_map::Point find_arrival_point(const VectorMap& lane_vmap, int lno,
 vector_map::Point find_nearest_point(const VectorMap& vmap, const vector_map::Point& point)
 {
   vector_map::Point nearest_point;
-  nearest_point.pid = -1;
+  nearest_point.pid = -1; //设置为-1，如果返回的pid<0代表没有找到最近点
 
   double distance = DBL_MAX;
   for (const vector_map::Point& p : vmap.points) {
