@@ -110,7 +110,8 @@ double DecelerateVelocity(double distance, double prev_velocity)
     return prev_velocity;
   }
 }
-
+//计算某点相对于车体坐标系下的坐标值
+// reference：https://blog.csdn.net/xiaoxiao123jun/article/details/104768813?spm=1001.2014.3001.5501
 // calculation relative coordinate of point from current_pose frame
 geometry_msgs::Point calcRelativeCoordinate(geometry_msgs::Point point_msg, geometry_msgs::Pose current_pose)
 {
