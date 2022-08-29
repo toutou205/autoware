@@ -16,12 +16,12 @@ uint8 PASS=0
 uint8 FAIL=1
 
 # Ver 1.00
-int32 lnid
-int32 did
-int32 blid
-int32 flid
+int32 lnid #lane ID
+int32 did  #Dtlane ID 
+int32 blid #before
+int32 flid #forward lane ID
 int32 bnid
-int32 fnid
+int32 fnid #大概同上
 int32 jct
 int32 blid2
 int32 blid3
@@ -30,14 +30,14 @@ int32 flid2
 int32 flid3
 int32 flid4
 int32 clossid
-float64 span
-int32 lcnt
-int32 lno
+float64 span # 该段车道线的长度
+int32 lcnt #同向车道数
+int32 lno   #同向车道的编号
 
 # Ver 1.20
-int32 lanetype
-int32 limitvel
-int32 refvel
-int32 roadsecid
-int32 lanecfgfg
+int32 lanetype #车道类型 0执行 1 左转 2右转
+int32 limitvel #限速
+int32 refvel #推荐速度
+int32 roadsecid #路段ID
+int32 lanecfgfg #是否可以变道
 int32 linkwaid
