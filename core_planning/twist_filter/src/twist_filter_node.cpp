@@ -57,7 +57,12 @@ TwistFilterNode::TwistFilterNode() : nh_(), pnh_("~"), health_checker_(nh_, pnh_
   // Enable health checker
   health_checker_.ENABLE();
 }
-
+/*
+关于 twist的解释
+linear.x指向机器人前方，linear.y指向左方，linear.z垂直向上满足右手系，平面移动机器人常常linear.y和linear.z均为0
+angular.z代表平面机器人的角速度，因为此时z轴为旋转轴
+reference： https://www.cnblogs.com/shang-slam/p/6891086.html
+*/
 void TwistFilterNode::configCallback(const autoware_config_msgs::ConfigTwistFilterConstPtr& config_msg)
 {
   twist_filter::Configuration twist_filter_config;
