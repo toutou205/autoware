@@ -74,6 +74,15 @@ void TwistFilterNode::configCallback(const autoware_config_msgs::ConfigTwistFilt
   twist_filter_ptr_->setConfiguration(twist_filter_config);
 }
 
+
+/*
+静态局部变量
+
+静态局部变量即在局部变量前面加 static 修饰
+只执行一次初始化，延长了局部变量的生命周期，在程序结束的时候才释放
+
+reference: https://zhuanlan.zhihu.com/p/104193620
+*/
 void TwistFilterNode::twistCmdCallback(const geometry_msgs::TwistStampedConstPtr& msg)
 {
   const twist_filter::Twist twist = { msg->twist.linear.x, msg->twist.angular.z };
