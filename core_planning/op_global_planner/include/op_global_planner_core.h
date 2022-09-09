@@ -75,7 +75,7 @@ public:
 
   WayPlannerParams()
   {
-      bEnableDynamicMapUpdate = false;
+    bEnableDynamicMapUpdate = false;
     bEnableReplanning = false;
     bEnableHMI = false;
     bEnableSmoothing = false;

@@ -238,6 +238,7 @@ vector_map::Point find_nearest_point(const VectorMap& vmap, const vector_map::Po
 
   double distance = DBL_MAX;
   for (const vector_map::Point& p : vmap.points) {
+    //reference: https://cplusplus.com/reference/cmath/hypot/
     double d = hypot(p.bx - point.bx, p.ly - point.ly);
     if (d <= distance) {
       nearest_point = p;
@@ -590,6 +591,7 @@ VectorMap create_coarse_vmap_from_route(const tablet_socket_msgs::route_cmd& rou
 
 VectorMap create_fine_vmap(const VectorMap& lane_vmap, int lno, const VectorMap& coarse_vmap, double search_radius,
          int waypoint_max)
+         //fine 精细  coarse 粗
 {
   VectorMap fine_vmap;
   VectorMap null_vmap;

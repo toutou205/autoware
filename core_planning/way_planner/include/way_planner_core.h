@@ -97,7 +97,7 @@ class AutowareRoadNetwork
     }
 };
 
-enum MAP_SOURCE_TYPE{MAP_AUTOWARE, MAP_FOLDER, MAP_KML_FILE};
+enum MAP_SOURCE_TYPE{MAP_AUTOWARE, MAP_FOLDER, MAP_KML_FILE}; //这几个枚举定义的是什么类型，没有整明白
 
 class WayPlannerParams
 {

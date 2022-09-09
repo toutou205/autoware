@@ -225,7 +225,8 @@ FileFormat WaypointLoaderNode::checkFileFormat(const char* filename)
   // parse first line
   std::vector<std::string> parsed_columns;
   parseColumns(line, &parsed_columns);
-
+  //关于 isdigit
+  //https://blog.csdn.net/Guo___Liang/article/details/121981604
   // check if first element in the first column does not include digit
   if (!std::any_of(parsed_columns.at(0).cbegin(), parsed_columns.at(0).cend(), isdigit))
   {
@@ -288,6 +289,10 @@ void parseColumns(const std::string& line, std::vector<std::string>* columns)
   {
     while (1)
     {
+      /*
+      主要功能：删除字符串中多余的空格
+      然后将字符串填充到相应的容器中
+      */
       auto res = std::find(column.begin(), column.end(), ' ');  
       // 查找是否存在空格，查找成功则返回一个指向指定元素的迭代器 
       // reference:  https://blog.csdn.net/qq_43799400/article/details/122699509
@@ -306,7 +311,7 @@ void parseColumns(const std::string& line, std::vector<std::string>* columns)
       columns->emplace_back(column);
       // note by xz 20220810 
       //不为空，将字符串装载到容器 columns 里面
-      // reference:
+      // reference: https://blog.csdn.net/weixin_45880571/article/details/119450328
     }
   }
 }

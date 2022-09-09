@@ -400,6 +400,7 @@ void GlobalPlanner::MainLoop()
 {
   ros::Rate loop_rate(25);
   timespec animation_timer;
+  // GetTickCount 具体作用是啥？
   UtilityHNS::UtilityH::GetTickCount(animation_timer);
 
   while (ros::ok())
@@ -427,7 +428,7 @@ void GlobalPlanner::MainLoop()
     else if (m_params.mapSource == PlannerHNS::MAP_AUTOWARE && !m_bKmlMap)
     {
       std::vector<UtilityHNS::AisanDataConnFileReader::DataConn> conn_data;;
-
+    //根据地图是否有节点(Node):有节点：m_MapRaw.GetVersion()==2，无节点：m_MapRaw.GetVersion()==1
       if(m_MapRaw.GetVersion()==2)
       {
         std::cout << "Map Version 2" << endl;

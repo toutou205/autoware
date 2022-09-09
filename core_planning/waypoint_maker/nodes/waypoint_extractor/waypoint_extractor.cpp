@@ -52,6 +52,17 @@ public:
     std::string directory_path, filename, extension;
 
     tmp = file_path;
+    /*
+    reference
+    关于 std::string::size_type
+    https://ask.csdn.net/questions/7418788
+    */
+
+   /*
+   reference
+   关于 find_last_of
+   https://blog.csdn.net/zhangxiao93/article/details/54381613/
+   */
     const std::string::size_type idx_slash(tmp.find_last_of("/"));
     if (idx_slash != std::string::npos)
     {

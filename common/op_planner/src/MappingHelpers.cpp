@@ -106,8 +106,11 @@ void MappingHelpers::ConstructRoadNetworkFromROSMessage(const std::vector<Utilit
     const std::vector<UtilityHNS::AisanCrossWalkFileReader::AisanCrossWalk>& crosswalk_data,
     const std::vector<UtilityHNS::AisanNodesFileReader::AisanNode>& nodes_data,
     const std::vector<UtilityHNS::AisanDataConnFileReader::DataConn>& conn_data,
-    const GPSPoint& origin, RoadNetwork& map, const bool& bSpecialFlag,
-    const bool& bFindLaneChangeLanes, const bool& bFindCurbsAndWayArea)
+    const GPSPoint& origin, 
+    RoadNetwork& map, 
+    const bool& bSpecialFlag,
+    const bool& bFindLaneChangeLanes, 
+    const bool& bFindCurbsAndWayArea)
 {
   vector<Lane> roadLanes;
   Lane lane_obj;
