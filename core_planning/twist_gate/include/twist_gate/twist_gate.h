@@ -98,7 +98,7 @@ private:
   enum class CommandMode
   {
     AUTO = 1,
-    REMOTE = 2
+    REMOTE = 2  //遥控的作用是啥？人工接管？
   }
   command_mode_,
 

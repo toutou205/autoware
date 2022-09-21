@@ -119,6 +119,7 @@ void createGlobalLaneArrayVelocityMarker(const autoware_msgs::LaneArray& lane_wa
       velocity_marker.pose.position.z += 0.2;
 
       // double to string
+      // note 转换为字符串后保留小数点后1位
       std::string vel = std::to_string(mps2kmph(lane.waypoints[i].twist.twist.linear.x));
       velocity_marker.text = vel.erase(vel.find_first_of(".") + 2);
 

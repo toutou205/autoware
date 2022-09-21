@@ -56,14 +56,14 @@ TwistGate::TwistGate(const ros::NodeHandle& nh, const ros::NodeHandle& private_n
   timer_ = nh_.createTimer(ros::Duration(1.0 / loop_rate_), &TwistGate::timerCallback, this);
 
   auto_cmd_sub_stdmap_["twist_cmd"] = nh_.subscribe("/twist_cmd", 1, &TwistGate::autoCmdTwistCmdCallback, this);
-  auto_cmd_sub_stdmap_["mode_cmd"] = nh_.subscribe("/mode_cmd", 1, &TwistGate::modeCmdCallback, this);
-  auto_cmd_sub_stdmap_["gear_cmd"] = nh_.subscribe("/gear_cmd", 1, &TwistGate::gearCmdCallback, this);
+  auto_cmd_sub_stdmap_["mode_cmd"] =  nh_.subscribe("/mode_cmd", 1, &TwistGate::modeCmdCallback, this);
+  auto_cmd_sub_stdmap_["gear_cmd"] =  nh_.subscribe("/gear_cmd", 1, &TwistGate::gearCmdCallback, this);
   auto_cmd_sub_stdmap_["accel_cmd"] = nh_.subscribe("/accel_cmd", 1, &TwistGate::accelCmdCallback, this);
   auto_cmd_sub_stdmap_["steer_cmd"] = nh_.subscribe("/steer_cmd", 1, &TwistGate::steerCmdCallback, this);
   auto_cmd_sub_stdmap_["brake_cmd"] = nh_.subscribe("/brake_cmd", 1, &TwistGate::brakeCmdCallback, this);
-  auto_cmd_sub_stdmap_["lamp_cmd"] = nh_.subscribe("/lamp_cmd", 1, &TwistGate::lampCmdCallback, this);
-  auto_cmd_sub_stdmap_["ctrl_cmd"] = nh_.subscribe("/ctrl_cmd", 1, &TwistGate::ctrlCmdCallback, this);
-  auto_cmd_sub_stdmap_["state"] = nh_.subscribe("/decision_maker/state", 1, &TwistGate::stateCallback, this);
+  auto_cmd_sub_stdmap_["lamp_cmd"] =  nh_.subscribe("/lamp_cmd", 1, &TwistGate::lampCmdCallback, this);
+  auto_cmd_sub_stdmap_["ctrl_cmd"] =  nh_.subscribe("/ctrl_cmd", 1, &TwistGate::ctrlCmdCallback, this);
+  auto_cmd_sub_stdmap_["state"] =     nh_.subscribe("/decision_maker/state", 1, &TwistGate::stateCallback, this);
   auto_cmd_sub_stdmap_["emergency_velocity"] =
       nh_.subscribe("emergency_velocity", 1, &TwistGate::emergencyCmdCallback, this);
 

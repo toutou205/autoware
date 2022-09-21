@@ -166,7 +166,11 @@ double getRelativeAngle(geometry_msgs::Pose waypoint_pose, geometry_msgs::Pose v
 
   return angle;
 }
+/*
+通过位置得出lane方向，然后再计算速度计算出lane方向。
+比较两者的差异，是否有冲突is_conflict，如果有继续做选择
 
+*/
 LaneDirection getLaneDirection(const autoware_msgs::Lane& current_path)
 {
   const LaneDirection pos_ret = getLaneDirectionByPosition(current_path);
@@ -187,6 +191,7 @@ LaneDirection getLaneDirectionByPosition(const autoware_msgs::Lane& current_path
   {
     const geometry_msgs::Pose& prev_pose = current_path.waypoints[i - 1].pose.pose;
     const geometry_msgs::Pose& next_pose = current_path.waypoints[i].pose.pose;
+    //为什么会用x的相对值来判断方向？
     const double rlt_x = calcRelativeCoordinate(next_pose.position, prev_pose).x;
     if (std::fabs(rlt_x) < 1e-3)
     {

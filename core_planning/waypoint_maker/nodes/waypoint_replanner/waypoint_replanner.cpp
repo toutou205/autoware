@@ -68,6 +68,9 @@ void WaypointReplanner::replanLaneWaypointVel(autoware_msgs::Lane& lane)
   }
   const LaneDirection dir = getLaneDirection(lane);
   unsigned long last = lane.waypoints.size() - 1;
+  /*
+  为什么需要在这里进行速度符号的改变？
+  */
   changeVelSign(lane, true);
   limitVelocityByRange(0, last, config_.velocity_max, lane);
   if (config_.resample_mode)
@@ -116,6 +119,8 @@ void WaypointReplanner::resampleLaneWaypoint(const double resample_interval, aut
   autoware_msgs::Lane original_lane(lane);
   lane.waypoints.clear();
   lane.waypoints.emplace_back(original_lane.waypoints[0]);
+  // ceil 结果取整
+  //
   lane.waypoints.reserve(ceil(1.5 * calcPathLength(original_lane) / config_.resample_interval));
 
   for (unsigned long i = 1; i < original_lane.waypoints.size(); i++)
@@ -216,7 +221,9 @@ void WaypointReplanner::resampleOnCurve(const geometry_msgs::Point& target_point
 // Three points used for curve detection (the target point is the center)
 // [0] = previous point, [1] = target point, [2] = next point
 const CbufGPoint WaypointReplanner::getCrvPointsOnResample(
-    const autoware_msgs::Lane& lane, const autoware_msgs::Lane& original_lane, unsigned long original_index) const
+    const autoware_msgs::Lane& lane, 
+    const autoware_msgs::Lane& original_lane, 
+    unsigned long original_index) const
 {
   unsigned long id = original_index;
   CbufGPoint curve_point(3);
@@ -307,7 +314,9 @@ void WaypointReplanner::raiseVelocityByRange(unsigned long start_idx, unsigned l
     lane.waypoints[idx].twist.twist.linear.x = vmin;
   }
 }
-
+/*
+作用： 将lane上面的的waypoint速度进行修正，将大于vmin的速度修改为最高限为vmin。
+*/
 void WaypointReplanner::limitVelocityByRange(unsigned long start_idx, unsigned long end_idx,
                                              double vmin, autoware_msgs::Lane& lane)
 {
@@ -328,6 +337,9 @@ void WaypointReplanner::limitVelocityByRange(unsigned long start_idx, unsigned l
   limitAccelDecel(end_idx, lane);
 }
 
+/*
+具体规划的是那几个点的速度
+*/
 void WaypointReplanner::limitAccelDecel(const unsigned long idx, autoware_msgs::Lane& lane)
 {
   const double acc[2] = { config_.accel_limit, config_.decel_limit };
@@ -343,6 +355,7 @@ void WaypointReplanner::limitAccelDecel(const unsigned long idx, autoware_msgs::
       const geometry_msgs::Point& p1 = lane.waypoints[next].pose.pose.position;
       const double dist = std::hypot(p0.x - p1.x, p0.y - p1.y);
       // maximum speed based on max_accel_limit or max_decel_limit
+      //加速与速度关系的公式
       v = sqrt(2 * acc[j] * dist + v * v);
       // cap it in case it is larger than the current velocity or velocity_max.
       v = std::min({v, lane.waypoints[next].twist.twist.linear.x, config_.velocity_max});
